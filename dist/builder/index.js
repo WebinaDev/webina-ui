@@ -6,3 +6,4 @@ export * from "./upload";
 export * from "./registry";
 export * from "./widgets";
 export * from "./endpoints";
+export * from "./motion";

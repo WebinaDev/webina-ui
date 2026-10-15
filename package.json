@@ -1,7 +1,7 @@
 {
   "name": "@webina/ui",
-  "version": "0.1.0",
-  "description": "Shared Webina UI primitives — accent palette, charts, API envelope helpers, locale formatting",
+  "version": "0.2.0",
+  "description": "Shared Webina UI primitives \u2014 accent palette, charts, API envelope helpers, locale formatting",
   "license": "UNLICENSED",
   "private": false,
   "type": "module",

@@ -33,8 +33,19 @@ import "@webina/ui/styles/themes.css"
 `dist/` is committed so consumers can install without a build step:
 
 ```json
-"@webina/ui": "git+https://github.com/WebinaDev/webina-ui.git#v0.1.0"
+"@webina/ui": "git+https://github.com/WebinaDev/webina-ui.git#v0.2.0"
 ```
 
 Rebuild with `npm run build` and commit `dist/` before tagging a new version.
 Exports: `@webina/ui`, `@webina/ui/builder`, `@webina/ui/styles/themes.css`.
+
+## Builder (`@webina/ui/builder`)
+
+Shared editor schemas/defaults for ERP + Dashboard (renderers stay per platform):
+
+- Content: section-heading, steps, icon-cards, badges, cta-banner, comparison-table, **team-grid**
+- Media: **video-embed**, **audio-block**, **before-after**, **lottie**
+- Forms: form (+ captcha / webhook / CRM), **login-form**, **register-form**
+- Layout: **section**, **columns**, **off-canvas**, **flex-container**, **grid-container**
+- Chrome: **site-header**, **site-footer**
+- Motion helpers: `entranceAnimClass`, `sharedMotionFields`, `defaultBackgroundVideo`

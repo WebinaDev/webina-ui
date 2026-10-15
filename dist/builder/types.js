@@ -1,2 +1,36 @@
 /** Widget ids both platforms must implement with these props. */
-export const SHARED_WIDGET_IDS = ["section-heading", "steps", "icon-cards", "badges", "cta-banner", "comparison-table", "form"];
+export const SHARED_WIDGET_IDS = [
+    "section-heading",
+    "steps",
+    "icon-cards",
+    "badges",
+    "cta-banner",
+    "comparison-table",
+    "form",
+    "team-grid",
+    "video-embed",
+    "audio-block",
+    "before-after",
+    "lottie",
+    "login-form",
+    "register-form",
+    "section",
+    "columns",
+    "off-canvas",
+    "flex-container",
+    "grid-container",
+    "site-header",
+    "site-footer",
+];
+/** Shared entrance animation names (platforms map these onto AdvancedProps / CSS). */
+export const SHARED_ENTRANCE_ANIMATIONS = [
+    "none",
+    "fade",
+    "slide-up",
+    "slide-down",
+    "slide-start",
+    "slide-end",
+    "zoom",
+    "flip",
+    "bounce",
+];

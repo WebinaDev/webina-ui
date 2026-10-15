@@ -2,6 +2,8 @@
  * Renderers stay per platform; these are the editor schemas + defaults. */
 import { uid } from "./ids";
 import { FORM_FIELD_TYPES } from "./forms";
+import { sharedGapWidgets, sharedTeamWidget, sharedVideoEmbedWidget, sharedAudioWidget, sharedBeforeAfterWidget, sharedLottieWidget, sharedLoginFormWidget, sharedRegisterFormWidget, sharedSectionWidget, sharedColumnsWidget, sharedOffCanvasWidget, sharedFlexContainerWidget, sharedGridContainerWidget, sharedSiteHeaderWidget, sharedSiteFooterWidget, } from "./widgets-gaps";
+export { sharedGapWidgets, sharedTeamWidget, sharedVideoEmbedWidget, sharedAudioWidget, sharedBeforeAfterWidget, sharedLottieWidget, sharedLoginFormWidget, sharedRegisterFormWidget, sharedSectionWidget, sharedColumnsWidget, sharedOffCanvasWidget, sharedFlexContainerWidget, sharedGridContainerWidget, sharedSiteHeaderWidget, sharedSiteFooterWidget, };
 export const DEFAULT_ICON_OPTIONS = [
     { value: "truck", label: "ارسال" },
     { value: "shield", label: "ضمانت" },
@@ -59,6 +61,16 @@ export function sharedFormWidget(opts = {}) {
             { kind: "repeater", key: "confirms", label: "تأییدهای الزامی", fields: [{ key: "text", label: "متن", kind: "text" }] },
             { kind: "switch", key: "showPhone", label: "فیلد تلفن" },
             { kind: "switch", key: "showEmail", label: "فیلد ایمیل" },
+            { kind: "switch", key: "captcha", label: "کپچا" },
+            { kind: "url", key: "webhookUrl", label: "وب‌هوک (URL ارسال پس از ثبت)" },
+            { kind: "select", key: "crmAction", label: "اکشن CRM", options: [
+                    { value: "", label: "بدون" },
+                    { value: "lead", label: "ثبت سرنخ" },
+                    { value: "contact", label: "ثبت مخاطب" },
+                    { value: "deal", label: "ثبت معامله" },
+                    { value: "custom", label: "سفارشی (کلید زیر)" },
+                ] },
+            { kind: "text", key: "crmKey", label: "کلید اکشن سفارشی CRM" },
         ],
         create: () => node("form", {
             title: "ارسال پیام",
@@ -67,6 +79,10 @@ export function sharedFormWidget(opts = {}) {
             fields: "",
             success: "پیام شما ثبت شد.",
             columns: "1",
+            captcha: false,
+            webhookUrl: "",
+            crmAction: "",
+            crmKey: "",
         }),
     };
 }
@@ -170,4 +186,8 @@ export function sharedContentWidgets(iconOptions = DEFAULT_ICON_OPTIONS) {
             create: () => node("comparison-table", { colA: "گزینه الف", colB: "گزینه ب", rows: "|", highlight: "b" }),
         },
     ];
+}
+/** Content widgets + gap widgets (team/media/layout/chrome/auth) for platforms that want one spread. */
+export function sharedAllBuilderWidgets(iconOptions = DEFAULT_ICON_OPTIONS) {
+    return [...sharedContentWidgets(iconOptions), ...sharedGapWidgets(iconOptions)];
 }
