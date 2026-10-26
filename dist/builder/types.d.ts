@@ -33,8 +33,8 @@ export type SharedFieldDef = {
     kind: "slider";
     key: string;
     label: string;
-    min?: number;
-    max?: number;
+    min: number;
+    max: number;
     step?: number;
     unit?: string;
 } | {

@@ -12,7 +12,7 @@ export type SharedFieldDef =
   | { kind: "number"; key: string; label: string; min?: number; max?: number }
   | { kind: "select"; key: string; label: string; options: SharedOption[] }
   | { kind: "switch"; key: string; label: string }
-  | { kind: "slider"; key: string; label: string; min?: number; max?: number; step?: number; unit?: string }
+  | { kind: "slider"; key: string; label: string; min: number; max: number; step?: number; unit?: string }
   | { kind: "icon"; key: string; label: string; options: SharedOption[] }
   | { kind: "link"; key: string; label: string }
   | { kind: "media"; key: string; label: string; accept?: "image" | "video" | "all" }
