@@ -8,4 +8,5 @@ export * from "./widgets";
 export * from "./endpoints";
 export * from "./motion";
 export * from "./widget-catalog";
+export * from "./chrome-extras";
 //# sourceMappingURL=index.d.ts.map

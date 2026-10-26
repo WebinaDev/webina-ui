@@ -30,6 +30,14 @@ export type SharedFieldDef = {
     key: string;
     label: string;
 } | {
+    kind: "slider";
+    key: string;
+    label: string;
+    min?: number;
+    max?: number;
+    step?: number;
+    unit?: string;
+} | {
     kind: "icon";
     key: string;
     label: string;
