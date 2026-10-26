@@ -7,4 +7,5 @@ export * from "./registry";
 export * from "./widgets";
 export * from "./endpoints";
 export * from "./motion";
+export * from "./widget-catalog";
 //# sourceMappingURL=index.d.ts.map
