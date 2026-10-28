@@ -36,7 +36,7 @@ export function navItemHref(it, opts) {
             case "brand":
                 return `/brand/${e}`;
             case "product":
-                return `/product/${e}`;
+                return opts?.product ? opts.product(ref) : `/product/${e}`;
             case "post":
                 return `/blog/${e}`;
             case "page":

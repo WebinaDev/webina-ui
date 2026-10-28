@@ -52,7 +52,8 @@ export const NAV_VISIBILITY: { key: NavVisibility; label: string }[] = [
 ]
 
 /** Per-app overrides for typed links (e.g. the store's category permalink scheme). */
-export type NavHrefOptions = { category?: (slug: string) => string }
+/** Per-app permalinks; omitted keys fall back to the WooCommerce-style defaults below. */
+export type NavHrefOptions = { category?: (slug: string) => string; product?: (slug: string) => string }
 
 /** Storefront URL for a menu item — root permalinks, never /pages/. */
 export function navItemHref(it: Pick<NavMenuItem, "type" | "ref" | "url">, opts?: NavHrefOptions): string {
@@ -65,7 +66,7 @@ export function navItemHref(it: Pick<NavMenuItem, "type" | "ref" | "url">, opts?
       case "brand":
         return `/brand/${e}`
       case "product":
-        return `/product/${e}`
+        return opts?.product ? opts.product(ref) : `/product/${e}`
       case "post":
         return `/blog/${e}`
       case "page":
