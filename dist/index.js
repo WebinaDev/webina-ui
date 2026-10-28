@@ -4,3 +4,4 @@ export * from "./charts/AccentCharts";
 export * from "./locale";
 export * from "./dashboard-theme";
 export * from "./dashboard-theme-react";
+export * from "./marketing/PopupCard";
