@@ -1,4 +1,108 @@
-export const FORM_FIELD_TYPES = ["text", "email", "tel", "number", "textarea", "select", "radio", "checkbox", "date", "file", "heading"];
+export const FORM_FIELD_TYPES = ["text", "email", "tel", "number", "textarea", "select", "radio", "checkbox", "date", "file", "heading", "time", "url", "hidden", "acceptance", "password", "rating", "calc"];
+/** Field types that never take user input (no required check). */
+const NO_INPUT = ["heading", "hidden", "calc"];
+const COND = /^([\p{L}\p{N}_.-]+)\s*(!=|>=|<=|=|~|>|<)\s*(.*)$/u;
+export function parseConditions(raw) {
+    const text = raw.trim();
+    if (!text)
+        return { list: [], mode: "and" };
+    const mode = text.includes("||") ? "or" : "and";
+    const list = text
+        .split(mode === "or" ? "||" : "&")
+        .map((part) => part.trim().match(COND))
+        .filter((m) => Boolean(m))
+        .map((m) => ({ name: m[1], op: m[2], value: m[3].trim() }));
+    return { list, mode };
+}
+function test(cond, values) {
+    const actual = values[cond.name] ?? "";
+    const op = cond.op ?? "=";
+    if (op === "=")
+        return actual === cond.value;
+    if (op === "!=")
+        return actual !== cond.value;
+    if (op === "~")
+        return actual.includes(cond.value);
+    const a = Number(toLatinDigits(actual));
+    const b = Number(toLatinDigits(cond.value));
+    if (!Number.isFinite(a) || !Number.isFinite(b) || actual.trim() === "")
+        return false;
+    return op === ">" ? a > b : op === "<" ? a < b : op === ">=" ? a >= b : a <= b;
+}
+function toLatinDigits(value) {
+    return value.replace(/[۰-۹]/g, (d) => String("۰۱۲۳۴۵۶۷۸۹".indexOf(d))).replace(/[٠-٩]/g, (d) => String("٠١٢٣٤٥٦٧٨٩".indexOf(d))).replace(/[,٬]/g, "");
+}
+/** Safe arithmetic (no eval): numbers, field names, + - * / % and parentheses. Unknown/empty fields count as 0. */
+export function evalFormula(formula, values) {
+    const tokens = formula.match(/\d+(?:\.\d+)?|[\p{L}_][\p{L}\p{N}_.-]*|[-+*/%()]/gu);
+    if (!tokens || tokens.join("").length !== formula.replace(/\s+/g, "").length)
+        return null;
+    let i = 0;
+    const num = (name) => {
+        const n = Number(toLatinDigits(values[name] ?? ""));
+        return Number.isFinite(n) ? n : 0;
+    };
+    const factor = () => {
+        const t = tokens[i++];
+        if (t === undefined)
+            throw new Error("eof");
+        if (t === "-")
+            return -factor();
+        if (t === "+")
+            return factor();
+        if (t === "(") {
+            const v = expr();
+            if (tokens[i++] !== ")")
+                throw new Error("paren");
+            return v;
+        }
+        if (/^\d/.test(t))
+            return Number(t);
+        if (/^[-+*/%()]$/.test(t))
+            throw new Error("op");
+        return num(t);
+    };
+    const term = () => {
+        let v = factor();
+        while (tokens[i] === "*" || tokens[i] === "/" || tokens[i] === "%") {
+            const op = tokens[i++];
+            const r = factor();
+            v = op === "*" ? v * r : op === "/" ? (r === 0 ? 0 : v / r) : r === 0 ? 0 : v % r;
+        }
+        return v;
+    };
+    const expr = () => {
+        let v = term();
+        while (tokens[i] === "+" || tokens[i] === "-") {
+            const op = tokens[i++];
+            const r = term();
+            v = op === "+" ? v + r : v - r;
+        }
+        return v;
+    };
+    try {
+        const v = expr();
+        if (i !== tokens.length || !Number.isFinite(v))
+            return null;
+        return Math.round(v * 100) / 100;
+    }
+    catch {
+        return null;
+    }
+}
+/** Values with every `calc` field computed (in order, so a calc can use an earlier calc) and `hidden` defaults filled. */
+export function withComputed(fields, values) {
+    const out = { ...values };
+    for (const field of fields) {
+        if (field.type === "hidden" && out[field.name] === undefined)
+            out[field.name] = field.formula ?? "";
+        if (field.type === "calc") {
+            const v = evalFormula(field.formula ?? "", out);
+            out[field.name] = v === null ? "" : String(v);
+        }
+    }
+    return out;
+}
 const DEFAULT_FIELDS = "نام|name|text\nموبایل|phone|tel\nپیام|message|textarea";
 export function parseFormFields(raw) {
     const text = typeof raw === "string" && raw.trim() ? raw : DEFAULT_FIELDS;
@@ -8,33 +112,42 @@ export function parseFormFields(raw) {
         .filter(Boolean)
         .map((line) => {
         const [label = "", name = "", type = "", options = "", required = "", step = "", showIf = ""] = line.split("|").map((part) => part.trim());
-        const cond = showIf.match(/^([\w.-]+)\s*=\s*(.*)$/);
+        const conds = parseConditions(showIf);
+        const kind = FORM_FIELD_TYPES.includes(type) ? type : "text";
+        const formulaField = kind === "calc" || kind === "hidden";
         return {
             label: label || name || "فیلد",
             name: (name || label || "field").replace(/[^\p{L}\p{N}_.-]/gu, "_"),
-            type: FORM_FIELD_TYPES.includes(type) ? type : "text",
-            options: options.split(/[,،]/).map((item) => item.trim()).filter(Boolean),
+            type: kind,
+            options: formulaField ? [] : options.split(/[,،]/).map((item) => item.trim()).filter(Boolean),
             // Legacy forms required every field; an empty column keeps that.
-            required: type !== "heading" && !["no", "خیر", "0", "false"].includes(required.toLowerCase()),
+            required: !NO_INPUT.includes(kind) && !["no", "خیر", "0", "false"].includes(required.toLowerCase()),
             step: Math.max(1, Number.parseInt(step, 10) || 1),
-            showIf: cond ? { name: cond[1], value: cond[2].trim() } : undefined,
+            showIf: conds.list[0],
+            ...(conds.list.length ? { showIfList: conds.list, showIfMode: conds.mode } : {}),
+            ...(formulaField ? { formula: options } : {}),
         };
     });
 }
 export function isVisible(field, values) {
-    if (!field.showIf)
+    const list = field.showIfList?.length ? field.showIfList : field.showIf ? [field.showIf] : [];
+    if (!list.length)
         return true;
-    return (values[field.showIf.name] ?? "") === field.showIf.value;
+    return field.showIfMode === "or" ? list.some((c) => test(c, values)) : list.every((c) => test(c, values));
 }
 export function stepCount(fields) {
     return fields.reduce((max, field) => Math.max(max, field.step), 1);
 }
 /** Names of visible required fields on `step` that are still empty. */
 export function missingOnStep(fields, values, step) {
-    return fields.filter((field) => field.type !== "heading" && field.step === step && field.required && isVisible(field, values) && !(values[field.name] ?? "").trim()).map((field) => field.name);
+    return fields
+        .filter((field) => !NO_INPUT.includes(field.type) && field.step === step && field.required && isVisible(field, values))
+        .filter((field) => (field.type === "acceptance" ? values[field.name] !== "1" : !(values[field.name] ?? "").trim()))
+        .map((field) => field.name);
 }
-/** Payload sent to the server: only visible fields. */
-export function visiblePayload(fields, values) {
+/** Payload sent to the server: only visible fields (calc/hidden values computed). */
+export function visiblePayload(fields, input) {
+    const values = withComputed(fields, input);
     const out = {};
     for (const field of fields)
         if (field.type !== "heading" && isVisible(field, values))
@@ -61,7 +174,7 @@ export function fieldsFromDefinition(raw) {
                 name,
                 type,
                 options: Array.isArray(row.options) ? row.options.map(String) : [],
-                required: type !== "heading" && row.required === true,
+                required: !NO_INPUT.includes(type) && row.required === true,
                 step: Math.max(1, Number(row.step) || 1),
             }];
     });

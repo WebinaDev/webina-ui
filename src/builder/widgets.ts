@@ -56,7 +56,7 @@ export const DEFAULT_ICON_OPTIONS: SharedOption[] = [
   { value: "map", label: "مکان" },
 ]
 
-const FORM_TYPE_LABELS: Record<FormFieldType, string> = { text: "متن", email: "ایمیل", tel: "تلفن", number: "عدد", textarea: "متن بلند", select: "فهرست کشویی", radio: "تک‌انتخابی", checkbox: "چندانتخابی", date: "تاریخ", file: "فایل (پیوست)", heading: "عنوان گروه" }
+const FORM_TYPE_LABELS: Record<FormFieldType, string> = { text: "متن", email: "ایمیل", tel: "تلفن", number: "عدد", textarea: "متن بلند", select: "فهرست کشویی", radio: "تک‌انتخابی", checkbox: "چندانتخابی", date: "تاریخ", file: "فایل (پیوست)", heading: "عنوان گروه", time: "ساعت", url: "نشانی وب", hidden: "پنهان", acceptance: "پذیرش قوانین", password: "رمز", rating: "امتیاز (ستاره)", calc: "محاسباتی" }
 
 function node(type: string, props: Record<string, unknown>): SharedWidgetNode {
   return { id: uid("w"), type, props }
@@ -87,10 +87,10 @@ export function sharedFormWidget(opts: SharedFormOptions = {}): SharedWidgetDef 
         { key: "label", label: "برچسب", kind: "text" },
         { key: "name", label: "نام فنی (name)", kind: "text" },
         { key: "type", label: "نوع", kind: "select", options: FORM_FIELD_TYPES.map((value) => ({ value, label: FORM_TYPE_LABELS[value] })) },
-        { key: "options", label: "گزینه‌ها (با ، جدا)", kind: "text" },
+        { key: "options", label: "گزینه‌ها (با ، جدا) / فرمول محاسباتی / مقدار پنهان", kind: "text" },
         { key: "required", label: "الزامی", kind: "select", options: [{ value: "", label: "بله" }, { value: "no", label: "خیر" }] },
         { key: "step", label: "مرحله", kind: "text" },
-        { key: "showIf", label: "نمایش فقط اگر (name=مقدار)", kind: "text" },
+        { key: "showIf", label: "نمایش فقط اگر (name=مقدار؛ عملگرها != ~ > < ؛ چند شرط با & یا ||)", kind: "text" },
       ],
     },
     { kind: "select", key: "columns", label: "ستون فیلدها", options: [{ value: "1", label: "یک ستون" }, { value: "2", label: "دو ستون" }] },
